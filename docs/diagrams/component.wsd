@@ -1,0 +1,38 @@
+@startuml
+
+package "Front-end" {
+  [Make Request to /students/gpa]
+}
+
+package "Backend" {
+
+  package "CDN" {
+    [Cache /students/gpa]
+  }
+
+  package "API Gateway" {
+  }
+
+  package "Grading Service" {
+  }
+
+  package "Database" {
+    [PostgreSQL]
+  }
+
+}
+
+[Make Request to /students/gpa] ..> [Cache /students/gpa] : GET /students/gpa
+[Cache /students/gpa] ..> [API Gateway] : Forward Request
+[API Gateway] ..> [Grading Service] : Invoke Service
+[Grading Service] ..> [PostgreSQL] : Query/Update
+
+note bottom of [Cache /students/gpa]
+: Cache-Control headers
+end note
+
+note bottom of [API Gateway]
+: Cache-Control headers
+end note
+
+@enduml

@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  grading:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - APP_PATH=/opt/digiexam
+      - PORT=8080
+      - LOG_LEVEL=debug
+      - SERVICENAME=grading
+      - DB.HOST=postgres
+      - DB.PORT=5432
+      - DB.USER=myuser
+      - DB.PASSWORD=mypassword
+      - DB.DBNAME=mydatabase
+      - DB.SSLMODE=disable
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - grading_network
+
+  postgres:
+    image: "postgres:13-alpine"
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - grading_network
+    ports:
+      - "5432:5432"
+
+networks:
+  grading_network:
+    driver: bridge
+
+volumes:
+  postgres_data:

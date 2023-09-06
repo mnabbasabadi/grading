@@ -1,0 +1,159 @@
+openapi: 3.0.3
+info:
+  title: Grading API
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: local server
+tags:
+  - name: students
+    description: Student operations
+  - name: grades
+    description: Grade operations
+paths:
+  /students/gpa:
+    get:
+      summary: Get GPA
+      description: Get GPA for a given student
+      tags:
+        - students
+      operationId: getGPA
+      parameters:
+          - $ref: "#/components/parameters/ScaleType"
+          - $ref: "#/components/parameters/limitQuery"
+          - $ref: "#/components/parameters/offsetQuery"
+      responses:
+        200:
+          $ref: "#/components/responses/GPAResponse"
+        400:
+          $ref: "#/components/responses/ResponseError"
+        404:
+          $ref: "#/components/responses/ResponseError"
+        500:
+            $ref: "#/components/responses/ResponseError"
+  /ready:
+    get:
+      summary: Get readiness status
+      description: Get readiness status
+      tags:
+        - students
+      operationId: getReadiness
+      responses:
+        200:
+          description: Ready
+        503:
+          description: Not ready
+  /live:
+    get:
+      summary: Get liveness status
+      description: Get liveness status
+      tags:
+        - students
+      operationId: getLiveness
+      responses:
+        200:
+          description: Live
+        503:
+          description: Not live
+components:
+  parameters:
+    limitQuery:
+      name: limit
+      in: query
+      description: the maximum number of items to return
+      schema:
+        type: integer
+        example: 10
+        minimum: 1
+        maximum: 100
+        default: 10
+    offsetQuery:
+        name: offset
+        in: query
+        description: the number of results to skip
+        schema:
+            type: integer
+            example: 0
+            minimum: 0
+            default: 0
+    ScaleType:
+      name: scale_type
+      in: query
+      description: scale type
+      schema:
+        type: string
+        enum:
+          - 4.0
+          - 4.3
+          - 5.0
+          - 10.0
+          - 7.0
+          - ECTS
+  responses:
+    GPAResponse:
+      description: GPA Response
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/GradeList"
+    ResponseError:
+      description: an error response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ResponseError'
+  schemas:
+    GradeList:
+      type: object
+      required: [grades]
+      properties:
+        grades:
+          type: array
+          items:
+            $ref: "#/components/schemas/Grade"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+      example: {grades: [{course: "Math", grade: "91", gpa: "A+"}], pagination: {limit: 10, offset: 0, total: 100}}
+    Grade:
+      type: object
+      required: [course_id, student_id,grade, gpa]
+      properties:
+        course_id:
+          type: string
+          description: course name
+        student_id:
+          type: string
+          description: student id
+        grade:
+          type: string
+          description: grade
+          example: 3.7
+        gpa:
+          type: string
+          description: grade point average
+          example: B
+      example: {course_id: "1", student_id: "123", grade: "91", gpa: "A+"}
+    ResponseError:
+      type: object
+      properties:
+        error:
+          type: string
+          description: error message
+
+    Pagination:
+      type: object
+      required: [limit, offset, total]
+      description: pagination for response
+      properties:
+        limit:
+          type: integer
+          description: number of items per page
+          example: 10
+        offset:
+            type: integer
+            description: number of items to skip
+            example: 0
+        total:
+            type: integer
+            description: total number of items
+            example: 100
